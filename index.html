@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="icon" href="https://static.vecteezy.com/system/resources/previews/041/165/835/non_2x/golden-and-red-fortune-wheel-spin-machine-with-set-icons-casino-banner-design-element-for-ui-png.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lucky Wheel - Putar & Menang!</title>
@@ -460,7 +461,7 @@
 
         .form-label {
             display: block;
-            color: #fbbf24;
+            color: #002d00;
             font-size: 1.125rem;
             font-weight: 600;
             margin-bottom: 12px;
@@ -518,7 +519,7 @@
             padding: 20px 48px;
             font-size: 1.5rem;
             font-weight: bold;
-            color: white;
+            color: rgb(255, 255, 255);
             background: linear-gradient(to bottom, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
             border: none;
             border-radius: 50px;
@@ -1209,7 +1210,7 @@
 
         <!-- User ID Form -->
         <div class="user-form">
-            <label class="form-label" for="userId">🎮 Masukkan User ID</label>
+            <label class="form-label" for="userId">🔎 Masukkan User ID</label>
             <input 
                 type="text" 
                 id="userId" 
@@ -1269,7 +1270,7 @@
     
     <audio id="wheelSpinningSound" preload="auto">
         <!-- GANTI 'wheel-spinning.mp3' DENGAN NAMA FILE AUDIO LU (sound pas roda berputar) -->
-        <source src="wheel-spinning.mp3" type="audio/mpeg">
+        <source src="assets/SPIN EFFECT.mp3" type="audio/mpeg">
     </audio>
     
     <audio id="winSound" preload="auto">
@@ -1293,7 +1294,7 @@
             // Ganti nama file sesuai file audio lu
             backgroundMusic: 'assets/backsound lebaran.mp3',    // Backsound looping
             spinSound: 'assets/pop sound.mp3',                // Sound pas klik tombol spin
-            wheelSpinningSound: 'wheel-spinning.mp3',   // Sound pas roda berputar
+            wheelSpinningSound: 'assets/SPIN EFFECT.mp3',   // Sound pas roda berputar
             winSound: 'assets/yeyy.mp3',                  // Sound pas menang
             
             // Volume settings (0.0 - 1.0)
@@ -1576,15 +1577,22 @@
             const container = document.getElementById('islamicRain');
             
             setInterval(() => {
-                // Create Ketupat or Bulan Sabit randomly
-                const isKetupat = Math.random() > 0.5;
-                const element = document.createElement('div');
-                
-                if (isKetupat) {
-                } else {
-                    element.className = 'bulan-sabit';
-                    element.textContent = '🌙';
-                }
+    const isKetupat = Math.random() > 0.5;
+    const element = document.createElement('div');
+
+    if (isKetupat) {
+        element.className = 'bulan-sabit';
+
+        const img = document.createElement('img');
+        img.src = 'https://static.vecteezy.com/system/resources/previews/038/366/110/non_2x/ketupat-3d-illustration-free-png.png'; // arahkan ke file gambar lu
+        img.alt = 'ketupat';
+        img.style.width = '40px'; // atur size
+        img.style.height = '40px';
+
+        element.appendChild(img);
+    }
+
+    document.body.appendChild(element);
                 
                 element.style.left = Math.random() * 100 + '%';
                 element.style.animationDuration = (Math.random() * 3 + 5) + 's';
@@ -1838,10 +1846,58 @@
             setTimeout(() => {
                 clearInterval(trailInterval);
                 
-                const normalizedRotation = currentRotation % 360;
-                const segmentAngle = 360 / segments.length;
-                const adjustedRotation = (360 - normalizedRotation + 90) % 360;
-                const segmentIndex = Math.floor(adjustedRotation / segmentAngle) % segments.length;
+                // FINAL FIX - Correct pointer position
+                const finalRotation = currentRotation % 360;
+                
+                // CRITICAL: Pointer is at -90° (TOP of wheel), NOT at 0°!
+                // Segments drawn: 
+                // Segment 0 (250RB): -90° to 0° 
+                // Segment 1 (500RB): 0° to 90°
+                // Segment 2 (1JT): 90° to 180°
+                // Segment 3 (2JT): 180° to 270°
+                
+                // After wheel rotates, find what angle is now at -90° (pointer position)
+                // If wheel rotates +X degrees clockwise, angle at pointer = -90 - X
+                let angleAtPointer = (-90 - finalRotation) % 360;
+                if (angleAtPointer < 0) angleAtPointer += 360;
+                
+                // Match to segment ranges
+                let segmentIndex;
+                
+                // Segment 0 (250RB): -90 to 0 (normalized: 270 to 360)
+                if ((angleAtPointer >= 270 && angleAtPointer < 360) || angleAtPointer === 0) {
+                    segmentIndex = 0;
+                }
+                // Segment 1 (500RB): 0 to 90
+                else if (angleAtPointer > 0 && angleAtPointer < 90) {
+                    segmentIndex = 1;
+                }
+                // Segment 2 (1JT): 90 to 180
+                else if (angleAtPointer >= 90 && angleAtPointer < 180) {
+                    segmentIndex = 2;
+                }
+                // Segment 3 (2JT): 180 to 270
+                else if (angleAtPointer >= 180 && angleAtPointer < 270) {
+                    segmentIndex = 3;
+                }
+                else {
+                    segmentIndex = 0;
+                }
+                
+                console.log('✅ CORRECTED DEBUG:', {
+                    'totalRotation': currentRotation.toFixed(2) + '°',
+                    'finalRotation': finalRotation.toFixed(2) + '°',
+                    'angleAtPointer': angleAtPointer.toFixed(2) + '°',
+                    'pointerPosition': '-90° (TOP)',
+                    'segmentRanges': {
+                        '0_250RB': '270-360° (-90 to 0°)',
+                        '1_500RB': '0-90°',
+                        '2_1JT': '90-180°',
+                        '3_2JT': '180-270°'
+                    },
+                    'matchedIndex': segmentIndex,
+                    'RESULT': `${segments[segmentIndex].label} (Rp ${segments[segmentIndex].value})`
+                });
                 
                 const winningSegment = segments[segmentIndex];
                 const winningValue = winningSegment.value;
@@ -1914,6 +1970,4 @@
     </script>
 
 </body>
-
 </html>
-
